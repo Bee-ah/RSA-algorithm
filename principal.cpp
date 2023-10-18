@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include<cstdlib> //para rand() e srand()
 #include <string>
 #include <vector>
@@ -7,13 +7,12 @@
 
 using namespace std;
 
-
 vector<int> firstprimes = { 2 , 3 , 5 , 7 , 11 , 13 , 17 , 19 , 23 ,
 29 , 31 , 37 , 41 , 43 , 47 , 53 };
 
-
+//máximo divisor comum, também chamado de algoritmo Euclidiano simples
 long long int mcd(long long int e, long long int phi) {
-    long long int temp;
+    long long int temp; //intermediário
     while (e != 0) {
         temp = phi % e;
         phi = e;
@@ -26,18 +25,17 @@ bool isCoprime(long long int a, long long int b) {
     return mcd(a, b) == 1;
 }
 
+//exponenciação modular
 unsigned long long modPow(unsigned long long base, unsigned long long expoente, unsigned long long modulo) {
     unsigned long long resul = 1;
     base %= modulo;
     while (expoente > 0) {
-
-        // Verifica se o ultimo digito do numero binario é 1
+        // Verifica se o ultimo digito do numero binário é 1
         if (expoente & 1) {
             resul = (resul * base) % modulo;
         }
-
         base = (base * base) % modulo;
-        expoente >>= 1;
+        expoente >>= 1; //divide o expoente por 2
     }
     return resul;
 }
@@ -51,13 +49,13 @@ bool easy(long long int numero) {
     return true;
 }
 
-//verifica se o número é composto
+//verifica se o número é composto, faz parte da verificação de MillerRabin
 bool check(long long int d, long long int n, int k) {
-    long long int a = 2 + rand() % (n - 4);
+    long long int a = 2 + rand() % (n - 4); //numero aleatório
     long long x = modPow(a, d, n);
     if (x == 1 || x == n - 1)
         return false;
-    for (int m = 1; m < k; m++) {
+    for (int m = 1; m < k; m++) {//verifica se algum termo é divisível por n
         x = (x * x) % n;
         if (x == n - 1)
             return false;
@@ -72,19 +70,20 @@ bool millerRabin(long long int n, int iter) {
     if (n <= 4)
         return n == 2 || n == 3;
 
-    long long int d = n - 1;
+    long long int d = n - 1;//d é par se n for primo diferente de 2
     int k = 0;
     //quando é divisível por 2
     while ((d & 1) == 0) {
         d >>= 1;
         k++;
     }
-    for (int j = 0; j < iter; j++) {
+    for (int j = 0; j < iter; j++) { 
         if (check(d, n, k))
             return false;
     }
     return true;
 }
+
 
 bool isPrime(long long int numero) {
     if (easy(numero)) {
@@ -92,7 +91,6 @@ bool isPrime(long long int numero) {
             return true;
         else
             return false;
-
     }
     else
         return false;
@@ -153,6 +151,7 @@ char decode(long long int  value, long long int n, long long int d) {
 int main()
 {   
     string message;
+    string texto_original;
     long long int n, p, q;
     long long int e = 2;
     long long int d = 2;
@@ -164,31 +163,16 @@ int main()
     cout << "DIGITE A MENSAGEM A SER CRIPTOGRAFADA:\n ";
     getline(cin, message);
 
-    //armazena valor de isPrime , começando com 'não é primo' 
-    bool teste = false;
-
     //para achar p, gera número de 16bits 
     do {
         p = (pow(2, 15) - 1) + (rand() & 0X7FFF);
-        if (isPrime(p) == false) {
-            teste = false;
-        }
-        else
-            teste = true;
-
-    } while (!teste);
+    } while (!isPrime(p));
 
 
     //para achar valor q , gera número de 16bits
     do {
         q = (pow(2, 15) - 1) + (rand() & 0X7FFF);
-        if (isPrime(q) == false) {
-            teste = false;
-        }
-        else
-            teste = true;
-
-    } while (!teste);
+    } while (!isPrime(q));
 
 
     //operações
@@ -203,26 +187,26 @@ int main()
     //chave privada 
     d = extd(phi, e);
 
-
+    //para codificar cada letra com o mesmo e
     for (unsigned char c : message) {
         long long int cipherchar = encode(c, n, e);
         ciphermessage.push_back(cipherchar);
 
     }
+    //imprimindo a mensagem cifrada
     cout << "\nMENSAGEM CIFRADA: [ ";
     for (unsigned long long int ci : ciphermessage) {
         cout << ci << " ";
 
     }
     cout << "]\n";
-
-    string texto_original;
-
     cout << "\nMENSAGEM DECIFRADA: ";
+    //decifrando a mesnagem
     for (unsigned long long int ci : ciphermessage) {
         texto_original += decode(ci, n, d);
 
     }
+    //saída
     cout << texto_original;
     cout << "\n\n*************VALORES USADOS*************";
     cout << "\nP: " << p << "   ";
@@ -233,3 +217,4 @@ int main()
     cout << "CHAVE PRIVADA: " << d << endl;
 
 }
+
